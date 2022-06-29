@@ -1,0 +1,9 @@
+*.pdf
+template/page*.*
+1000/
+node_modules
+package-lock.json
+tempFolder
+data/exports/*
+!data/exports/placeholder.md
+logs

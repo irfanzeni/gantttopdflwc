@@ -1,0 +1,31 @@
+<html>
+
+<body>
+	<script src="request.js"></script>
+
+	<script>
+		var form = this._hidden_export_form = document.createElement("div");
+		form.innerHTML = "<form method='POST' target='_blank'><textarea name='data' ></textarea><input name='type' value=''></form>";
+		document.body.appendChild(form);
+
+
+
+		function load() {
+			form.firstChild.action = "http://localhost:3200/gantt";
+			form.firstChild.childNodes[0].value = JSON.stringify(request);
+			form.firstChild.childNodes[1].value = "pdf";
+
+		}
+		function submit() {
+
+			form.firstChild.submit();
+		}
+
+	</script>
+
+	<input type=button value="load" onclick="load()">
+	<input type=button value="submit" onclick="submit()">
+
+</body>
+
+</html>

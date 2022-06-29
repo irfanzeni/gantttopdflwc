@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <title>Basic initialization</title>
+</head>
+
+    <script src="../../../gantt/pdf/polyfill.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../../../gantt/builds/gantt70/codebase/dhtmlxgantt.js" type="text/javascript" charset="utf-8"></script>
+    <link rel="stylesheet" href="../../../gantt/builds/gantt70/codebase/skins/dhtmlxgantt_{{skin}}.css" type="text/css" title="no title" charset="utf-8">
+
+    <style type="text/css">
+        html, body { height:100%; padding:0px; margin:0px; background: white; }
+        .gantt_hor_scroll,
+        .gantt_ver_scroll {
+            display: none !important;
+        }
+        .gantt_task_progress_wrapper {
+            height: 100%;
+        }
+        .gantt_scale_line .gantt_scale_cell.gantt_last_cell {
+            border-right-width: 0px;
+        }
+
+        /* current gantt codebase don't use webkit prefix for css transform, apparently phantomjs needs it */
+        /*.gantt_task_line.gantt_milestone .gantt_task_content {
+            -webkit-transform: rotate(45deg);
+            -moz-box-sizing: border-box;
+            transform: rotate(45deg);
+        }*/
+
+        /* our version of phantomjs doesn't seem to support flexboxes */
+        /*.gantt_row {
+            display:block;
+        }
+        .gantt_cell, .gantt_tree_indent, .gantt_tree_icon, .gantt_tree_content {
+            display: inline-block;
+        }*/
+        /*make scrollbars transparent*/
+        html {
+          overflow:   scroll;
+        }
+        ::-webkit-scrollbar {
+          width: 0px;
+          height:0px;
+        }
+        /**/
+    </style>
+<body>
+    <div id='gantt_header'>{{header}}</div>
+    <div id="gantt_here">{{raw}}</div>
+    <div id='gantt_footer'>{{footer}}</div>
+    <style type="text/css">html>body>style+div,html>body>div#gantt_footer~div {zoom:normal !important;}</style>
+    {{watermark}}
+    <script type="text/javascript">
+
+        function expandParents(start, repeatUntil){
+            eachParent(start, function(node){
+                node.style.height = "auto";
+                node.style.width = "auto";
+            }, repeatUntil);
+        }
+
+        function hideParents(start, repeatUntil){
+            eachParent(start, function(node){
+                node.style.display = "none";
+            }, repeatUntil);
+        }
+
+        function eachParent(start, callback, repeatUntil){
+            if(start && start.parentNode){
+                var parent = start.parentNode;
+                if(!parent.style) return;
+
+                callback(parent);
+                if(parent.className.indexOf(repeatUntil) < 0){
+                    eachParent(parent, callback, repeatUntil)
+                }
+            }
+        }
+
+        function eachElement(selector, callback){
+            var gc = document.querySelectorAll(selector);
+            for(var i = 0; i < gc.length; i++){
+                callback(gc[i]);
+            }
+        }
+
+        eachElement(".gantt_ver_scroll", function(element){
+            hideParents(element, "gantt_layout_cell");
+        });
+        
+        eachElement(".gantt_data_area", function(element){
+            element.style.width = element.scrollWidth + "px";
+            element.style.height = element.scrollHeight + "px";
+            expandParents(element, "gantt_layout_cell");
+        });
+
+        eachElement(".gantt_grid_data", function(element){
+            element.style.height = element.scrollHeight+"px";
+            expandParents(element, "gantt_here");
+        });
+
+        eachElement(".gantt_hor_scroll", function(element){
+            hideParents(element, "gantt_layout_cell");
+        });
+
+        eachElement(".gantt_task", function(element){
+            element.style.width = element.scrollWidth +"px";
+            element.style.height = element.scrollHeight+"px";
+        });
+
+        eachElement(".gantt_grid", function(element){
+            element.style.height = element.scrollHeight+"px";
+            expandParents(element, "gantt_here");
+        });
+        
+        var gh = document.getElementById("gantt_here");
+        gc = document.getElementsByClassName("gantt_container")[0];
+        gc.style.width = gh.style.width = gc.scrollWidth+"px";
+        gc.style.height = gh.style.height = gc.scrollHeight+"px";
+        // expandParents(gc, "gantt_here");
+
+
+    </script>
+</body>

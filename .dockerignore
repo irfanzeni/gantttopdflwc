@@ -1,0 +1,6 @@
+.git
+node_modules
+tempFolder
+data/exports/*
+!data/exports/placeholder.md
+logs

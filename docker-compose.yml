@@ -1,0 +1,18 @@
+version: "3"
+services:
+  db:
+    restart: always
+    ports:
+      - 3200:3200
+    build: .
+    image: registry.webix.io/dhtmlx-export:latest
+    volumes:
+      - data:/data
+    environment:
+      - EXPORT_MAX_FILE_SIZE=10000000
+      - EXPORT_TRACK_ERRORS=https://3c73c797635945bb88ff1133e1e596e7:e51d3be34728452cae4fca181ceb971e@sentry.webix.io/3
+      - FILES_ROOT=/data
+      - EXPORT_HTTP=http://localhost:3200
+      - PUBLIC_PORT=3200
+volumes:
+  data:

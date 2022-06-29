@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <title>Basic initialization</title>
+</head>
+    <script src="../../../gantt/builds/gantt42/codebase/dhtmlxgantt.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../../../gantt/builds/gantt42/codebase/ext/dhtmlxgantt_critical_path.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../../../gantt/builds/gantt42/codebase/locale/locale_{{locale}}.js" type="text/javascript" charset="utf-8"></script>
+    <link rel="stylesheet" href="../../../gantt/builds/gantt42/codebase/skins/dhtmlxgantt_{{skin}}.css" type="text/css" title="no title" charset="utf-8">
+
+    <style type="text/css">
+        html, body{ height:100%; padding:0px; margin:0px; background: white; }
+        /*make scrollbars transparent*/
+        html {
+          overflow:   scroll;
+        }
+        ::-webkit-scrollbar {
+          width: 0px;
+          height:0px;
+        }
+        /**/
+
+    </style>
+<body>
+    <div id='gantt_header'>{{header}}</div>
+    <div id="gantt_here" style='width:100px; height:100px;'></div>
+    <div id='gantt_footer'>{{footer}}</div>
+    <style type="text/css">html>body>style+div,html>body>div#gantt_footer~div {zoom:normal !important;}</style>
+    {{watermark}}
+    <script type="text/javascript">
+        function column_helper(i){
+            return function(obj){ return obj[i] || ""; } 
+        };
+
+        gantt.templates.leftside_text = function(s,e,o){ return o.$0 || ""; };
+        gantt.templates.rightside_text = function(s,e,o){ return o.$1 || ""; };
+        gantt.templates.task_text = function(s,e,o){ return o.$2 || o.text; };
+        gantt.templates.progress_text = function(s,e,o){ return o.$3 || ""; };
+        gantt.templates.task_class = function(s,e,o){ return o.$4 || ""; };
+
+        var config = {{config}};
+        for (var key in config)
+            gantt.config[key] = config[key];
+
+        gantt.config.autosize = "xy";
+        gantt.config.static_background = true;
+        /*//phantomjs can't align repeating backgrounds automatically in PDF export
+        //so fallback to the HTML background
+        if (gantt.config.static_background){
+            gantt.config.show_task_cells = true;
+            gantt.config.static_background = false;
+        }*/
+
+        var columns = gantt.config.columns;
+        if (columns && columns.length)
+            if (columns[columns.length-1].name == "add")
+                columns.pop();
+
+        for (var i = 0; i < columns.length; i++)
+            if (columns[i].$template)
+                columns[i].template = column_helper("_"+i);
+
+        
+
+        var start_date = "{{start_date}}";
+        var end_date   = "{{end_date}}";
+        if (start_date || end_date){
+            var convert = gantt.date.str_to_date(gantt.config.api_date);
+            start_date = start_date ? convert(start_date) : null;
+            end_date = end_date ? convert(end_date) : null;
+
+            gantt.init("gantt_here", start_date, end_date);
+        } else
+            gantt.init("gantt_here");
+        gantt.parse({{data}});
+    </script>
+</body>

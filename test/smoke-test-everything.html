@@ -1,0 +1,512 @@
+<html>
+<head>
+
+<script src="/gantt/builds/gantt70/codebase/dhtmlxgantt.js"></script>
+<link rel="stylesheet" href="/gantt/builds/gantt70/codebase/dhtmlxgantt.css">
+
+<script src="/scheduler/builds/dhtmlxscheduler.js"></script>
+<script src="/scheduler/builds/ext/dhtmlxscheduler_timeline.js"></script>
+<script src="/scheduler/builds/ext/dhtmlxscheduler_treetimeline.js"></script>
+<script src="/scheduler/builds/ext/dhtmlxscheduler_daytimeline.js"></script>
+<script src="/scheduler/builds/ext/dhtmlxscheduler_agenda_view.js"></script>
+<script src="/scheduler/builds/ext/dhtmlxscheduler_grid_view.js"></script>
+<script src="/scheduler/builds/ext/dhtmlxscheduler_week_agenda.js"></script>
+<script src="/scheduler/builds/ext/dhtmlxscheduler_year_view.js"></script>
+<script src="/scheduler/builds/ext/dhtmlxscheduler_units.js"></script>
+<link rel="stylesheet" href="/scheduler/builds/scheduler53/codebase/dhtmlxscheduler_terrace.css">
+
+
+<script src="/gantt/api.js"></script>
+<script src="/scheduler/api.js"></script>
+</head>
+
+<style>
+.exports{
+	display:inline-block;
+	border: dashed gold;
+}
+.imports{
+	display:inline-block;
+	border: dashed mediumaquamarine;
+}
+
+.component_version{
+	width: 40px;
+}
+
+form{
+	margin: unset !important;
+}
+
+.gantt-excel-form{
+	width:800px;
+}
+
+.gantt-excel-form table{
+	width:740px;
+	text-align: left;
+	border-collapse: collapse;
+}
+
+.gantt-excel-form .dhtmlx_popup_text{
+	max-height: 400px;
+	overflow: auto;
+}
+
+.gantt-excel-form table th{
+	text-align: center
+}
+.gantt-excel-form table td{
+	border:1px solid #aeaeae;
+	padding:5px;
+}
+
+.gantt-excel-form table td select{
+	width:100%;
+	padding:5px;
+}
+
+.gantt_message_area{
+	z-index: 99 !important;
+}
+
+
+</style>
+
+<body>
+<div class='exports'>
+Gantt:
+<select onchange=reloadGantt(this.value)>
+	<option value="7.0">7.0</option>
+	<option value="6.2">6.2</option>
+	<option value="6.0">6.0</option>
+	<option value="5.1">5.1</option>
+	<option value="5.0">5.0</option>
+	<option value="4.2">4.2</option>
+	<option value="4.0">4.0</option>
+	<option value="3.2">3.2</option>
+	<option value="3.0">3.0</option>
+</select>||
+<select class='gantt' onchange="set_export_server(this)">
+	<option value="https://export.dhtmlx.com/gantt">online</option>
+	<option value="https://export.dhtmlx.com/beta/gantt">beta</option>
+	<option value="http://localhost:3200/gantt" selected>http://localhost:3200/gantt</option>
+	<option value="custom">custom</option>
+</select>||
+<input type=button onclick='gantt.exportToPDF({server:gantt_export_server});' value="PDF" />
+<input type=button onclick='gantt.exportToPDF({raw:true,server:gantt_export_server});' value="PDF,raw" />
+<input type=button onclick='gantt.exportToPNG({server:gantt_export_server});' value="PNG" />
+<input type=button onclick='gantt.exportToPNG({raw:true,server:gantt_export_server});' value="PNG,raw" />
+<input type=button onclick='gantt.exportToExcel({server:gantt_export_server});' value="Excel" />
+<input type=button onclick='gantt.exportToICal({server:gantt_export_server});' value="iCal" />
+<input type=button onclick='gantt.exportToJSON({server:gantt_export_server});' value="JSON" />
+<input type=button onclick='gantt.exportToMSProject({server:gantt_export_server});' value="MSP" />
+<input type=button onclick='gantt.exportToPrimaveraP6({server:gantt_export_server});' value="Primavera" />
+<hr>
+Scheduler:
+<select onchange=reloadScheduler(this.value)>
+	<option value="5.3">5.3</option>
+	<option value="5.2">5.2</option>
+	<option value="5.1">5.1</option>
+	<option value="5.0">5.0</option>
+	<option value="4.4">4.4</option>
+	<option value="4.0">4.0</option>
+	<option value="3.0">3.0</option>
+</select>||
+<select class='scheduler' onchange="set_export_server(this)">
+	<option value="https://export.dhtmlx.com/scheduler">online</option>
+	<option value="https://export.dhtmlx.com/beta/scheduler">beta</option>
+	<option value="http://localhost:3200/scheduler" selected>http://localhost:3200/scheduler</option>
+	<option value="custom">custom</option>
+</select>||
+<input type=button onclick='scheduler.exportToPDF({server:scheduler_export_server, name:getSchedulerExportFileName("pdf", scheduler_export_server)});' value="PDF" />
+<input type=button onclick='scheduler.exportToPNG({server:scheduler_export_server, name:getSchedulerExportFileName("png", scheduler_export_server)});' value="PNG" />
+<input type=button onclick='scheduler.exportToExcel({server:scheduler_export_server});' value="Excel" />
+<input type=button onclick='scheduler.exportToICal({server:scheduler_export_server});' value="iCal" />
+</div>
+
+<div class='imports'>
+	<form id="mspImport" action="" method="POST" enctype="multipart/form-data">
+		<input value='Choose Excel file' type="file" id="excelFile" name="file" accept=".xlsx,.xls"/>
+		<button type="button" class="btn btn-sm btn-primary" onclick="uploadFile_excel()"><i class="fa fa-upload">Import Excel</i></button>
+		<hr>
+		<input type="file" id="mspFile" name="file" accept=".mpp,.xml, text/xml, application/xml, application/vnd.ms-project, application/msproj, application/msproject, application/x-msproject, application/x-ms-project, application/x-dos_ms_project, application/mpp, zz-application/zz-winassoc-mpp"/>
+		<button type="button" class="btn btn-sm btn-primary" onclick="uploadFile_msp()"><i class="fa fa-upload">Import MSP</i></button>
+	</form>
+</div>
+</div>
+
+<div id="gantt_here" style="width:100%; height:45%;"></div>
+<div id="scheduler_here" class="dhx_cal_container" style="width:100%; height:45%;">
+</div>
+
+</body>
+
+<script>
+var gantt_export_server = "http://localhost:3200/gantt";
+
+function set_export_server(option) {
+  var value = option.value;
+  if (value == "custom") {
+    value = prompt("Enter the export server URL and port");
+    option.lastElementChild.innerHTML = value;
+  }
+  if (option.className == "gantt") {
+    gantt_export_server = value;
+  }
+  else {
+    scheduler_export_server = value;
+  }
+}
+
+var tasks = {
+  "data": [
+    { "id": "10", "text": "Project #1", "start_date": "2025-04-01", "duration": 3, "order": 10, "progress": 0.4, "open": true },
+    { "id": "1", "text": "Task #1", "start_date": "2025-04-02", "duration": 2, "order": 10, "progress": 0.6, "parent": "10" },
+    { "id": "2", "text": "Task #2", "start_date": "2025-04-01", "duration": 2, "order": 20, "progress": 0.6, "parent": "10" },
+    { "id": "20", "text": "Project #2", "start_date": "2025-04-01", "duration": 3, "order": 10, "progress": 0.4, "type": "project", "open": true },
+    { "id": "3", "text": "Task #3", "start_date": "2025-04-02", "duration": 2, "order": 10, "progress": 0.6, "parent": "20" },
+    { "id": "4", "text": "Task #4", "start_date": "2025-04-01", "duration": 2, "order": 20, "progress": 0.6, "parent": "20" }
+  ],
+  "links": [
+    { "id": 1, "source": 1, "target": 2, "type": "0" },
+    { "id": 2, "source": 2, "target": 3, "type": "0" },
+    { "id": 3, "source": 3, "target": 4, "type": "0" },
+    { "id": 4, "source": 2, "target": 5, "type": "0" }
+  ]
+}
+
+gantt.config.date_format = "%Y-%m-%d %H:%i";
+
+gantt.init("gantt_here");
+gantt.parse(tasks);
+
+function reloadGantt(ganttVersion) {
+  if (gantt.destructor) gantt.destructor();
+  var script = document.createElement("script");
+  script.onload = function () {
+    this.parentNode.removeChild(this);// remove script from dom in order not to clutter it too much
+    gantt = Gantt.getGanttInstance();
+    gantt.config.date_format = "%Y-%m-%d %H:%i";
+    gantt.config.xml_date = "%Y-%m-%d %H:%i";
+
+    gantt.init("gantt_here");
+    gantt.parse(tasks);
+    gantt.message("Current Gantt version: " + gantt.version)
+
+    //export function
+    var script2 = document.createElement("script");
+    script2.src = "/gantt/api.js"
+    document.querySelector("head").appendChild(script2);
+  };
+
+  script.src = "../gantt/builds/gantt" + ganttVersion.replace('.', '') + "/codebase/dhtmlxgantt.js"
+  document.querySelector("head").appendChild(script);
+
+}
+
+gantt.message({
+  text: "This is a test page where you can check that the export module correctly exports/imports the data",
+  expire: -1
+})
+
+
+
+function to_snake_case(name) {
+  return (name + "").toLowerCase().replace(/ /, "_");
+}
+function loadTable(mapping, data) {
+  var ganttDataset = {
+    data: [],
+    links: []
+  };
+
+  data.forEach(function (item) {
+    var copy = {};
+    for (var i in item) {
+      if (mapping[i]) {
+        copy[mapping[i]] = item[i];
+      } else {
+        copy[to_snake_case(i)] = item[i];
+      }
+
+      copy.open = true;
+      if (copy.wbs) {
+        var wbs = copy.wbs + "";
+        copy.id = wbs;
+        var parts = wbs.split(".");
+        parts.pop();
+        copy.parent = parts.join(".");
+      }
+    }
+    ganttDataset.data.push(copy);
+  });
+
+  gantt.clearAll();
+  gantt.parse(ganttDataset);
+
+}
+
+function getOptions(selectedIndex) {
+  return [
+    "wbs", "text", "start_date", "duration", "end_date", "id", "parent"
+  ].map(function (name, index) {
+    return "<option value='" + name + "' " + (selectedIndex == index ? "selected" : "") + ">" + name + "</option>";
+  }).join("");
+}
+
+function upload_excel(file, callback) {
+  gantt.importFromExcel({
+    server: gantt_export_server,
+    data: file,
+    callback: function (project) {
+      if (project) {
+
+        var header = [];
+        var headerControls = [];
+        var body = [];
+
+        project.forEach(function (task) {
+          var cols = [];
+          if (!header.length) {
+            for (var i in task) {
+              header.push(i);
+            }
+            header.forEach(function (col, index) {
+              cols.push("<th>" + col + "</th>");
+              headerControls.push("<td><select data-column-mapping='" + col + "'>" + getOptions(index) + "</select>")
+            });
+            body.push("<tr>" + cols.join("") + "</tr>");
+            body.push("<tr>" + headerControls.join("") + "</tr>");
+          }
+          cols = [];
+          header.forEach(function (col) {
+            cols.push("<td>" + task[col] + "</td>");
+          });
+          body.push("<tr>" + cols.join("") + "</tr>");
+        });
+
+
+        var div = gantt.modalbox({
+          title: "Assign columns",
+          type: "excel-form",
+          text: "<table>" + body.join("") + "</table>",
+          buttons: [
+            { label: "Save", css: "link_save_btn", value: "save" },
+            { label: "Cancel", css: "link_cancel_btn", value: "cancel" }
+          ],
+          callback: function (result) {
+            switch (result) {
+              case "save":
+                var selects = div.querySelectorAll("[data-column-mapping]");
+                var mapping = {};
+                selects.forEach(function (select) {
+                  mapping[select.getAttribute("data-column-mapping")] = select.value;
+                });
+                loadTable(mapping, project);
+                break;
+              case "cancel":
+                //Cancel
+                break;
+            }
+          }
+        });
+
+
+
+      }
+
+      if (callback)
+        callback(project);
+    }
+  });
+}
+
+
+
+function uploadFile_excel() {
+  var fileInput = document.getElementById("excelFile");
+  console.log('uploadFile: ', fileInput.files[0]);
+  upload_excel(fileInput.files[0]);
+}
+
+
+
+function upload_msp(file) {
+  gantt.importFromMSProject({
+    server: gantt_export_server,
+    data: file,
+    callback: function (project) {
+      if (project) {
+        gantt.clearAll();
+        if (project.config.duration_unit) {
+          gantt.config.duration_unit = project.config.duration_unit;
+        }
+        console.log('import: ', project.data);
+        gantt.parse(project.data);
+      }
+    }
+  });
+}
+
+function uploadFile_msp() {
+  var fileInput = document.getElementById("mspFile");
+  console.log('uploadFile: ', fileInput.files[0]);
+  upload_msp(fileInput.files[0]);
+}
+</script>
+
+<script>
+var scheduler_export_server = "http://localhost:3200/scheduler"
+function getServerName(url) {
+  var option = document.querySelector("[value='" + url + "']");
+  if (option) {
+    return option.innerText;
+  }
+  return "";
+}
+
+function getSchedulerExportFileName(extension, url) {
+  return "scheduler-" + scheduler.version + "-" + scheduler.getState().mode + "-" + (getServerName(url).replace(/\./g, "")) + "." + extension;
+}
+
+scheduler.config.xml_date = "%Y-%m-%d %h:%i";
+var sections = [
+  { key: 1, label: "Section A" },
+  { key: 2, label: "Section B" },
+  { key: 3, label: "Section C" },
+  { key: 4, label: "Section D" }
+];
+
+scheduler.locale.labels.week_agenda_tab = "Week A.";
+scheduler.locale.labels.unit_tab = "Unit"
+scheduler.createUnitsView({
+  name: "unit",
+  property: "section_id",
+  list: sections
+});
+
+scheduler.locale.labels.timeline_tab = "Timeline";
+scheduler.createTimelineView({
+  name: "timeline",
+  x_unit: "minute",
+  x_date: "%H:%i",
+  x_step: 30,
+  x_size: 24,
+  x_start: 16,
+  x_length: 48,
+  y_unit: sections,
+  y_property: "section_id",
+  render: "bar"
+});
+
+var treeSections = [ // original hierarhical array to display
+  {
+    key: 10, label: "Web Testing Dep.", open: true, children: [
+      { key: 20, label: "Elizabeth Taylor" },
+      {
+        key: 30, label: "Managers", children: [
+          { key: 40, label: "John Williams" },
+          { key: 50, label: "David Miller" }
+        ]
+      },
+      { key: 60, label: "Linda Brown" },
+      { key: 70, label: "George Lucas" }
+    ]
+  },
+  {
+    key: 110, label: "Human Relations Dep.", open: true, children: [
+      { key: 80, label: "Kate Moss" },
+      { key: 90, label: "Dian Fossey" }
+    ]
+  }
+];
+
+scheduler.locale.labels.treetimeline_tab = "Tree";
+scheduler.createTimelineView({
+  section_autoheight: false,
+  name: "treetimeline",
+  x_unit: "minute",
+  x_date: "%H:%i",
+  x_step: 30,
+  x_size: 24,
+  x_start: 16,
+  x_length: 48,
+  y_unit: treeSections,
+  y_property: "section_id",
+  render: "tree",
+  folder_dy: 30,
+  dy: 60
+});
+
+scheduler.locale.labels.daytimeline_tab = "DayTimeline";
+scheduler.createTimelineView({
+  name: "daytimeline",
+  x_unit: "minute",
+  x_date: "%H:%i",
+  x_step: 30,
+  x_size: 24,
+  x_start: 16,
+  render: "days",
+  days: 18
+});
+
+scheduler.locale.labels.grid_tab = "Grid";
+scheduler.createGridView({
+  fields: [
+    { id: "id" },
+    { id: "text" },
+    { id: "date" }
+  ],
+  select: false,
+  paging: true
+});
+
+scheduler.init("scheduler_here", new Date(2017, 5, 30), "week");
+scheduler.parse([
+  { start_date: "2017-06-30 09:00", end_date: "2017-06-30 12:00", text: "Task A-12458", section_id: 1 },
+  { start_date: "2017-06-30 10:00", end_date: "2017-06-30 16:00", text: "Task A-89411", section_id: 1 },
+  { start_date: "2017-06-30 10:00", end_date: "2017-06-30 14:00", text: "Task A-64168", section_id: 1 },
+  { start_date: "2017-06-30 16:00", end_date: "2017-06-30 17:00", text: "Task A-46598", section_id: 1 },
+
+  { start_date: "2017-06-30 12:00", end_date: "2017-06-30 20:00", text: "Task B-48865", section_id: 2 },
+  { start_date: "2017-06-30 14:00", end_date: "2017-06-30 16:00", text: "Task B-44864", section_id: 2 },
+  { start_date: "2017-06-30 16:30", end_date: "2017-06-30 18:00", text: "Task B-46558", section_id: 2 },
+  { start_date: "2017-06-30 18:30", end_date: "2017-06-30 20:00", text: "Task B-45564", section_id: 2 },
+
+  { start_date: "2017-06-30 08:00", end_date: "2017-06-30 12:00", text: "Task C-32421", section_id: 3 },
+  { start_date: "2017-06-30 14:30", end_date: "2017-06-30 16:45", text: "Task C-14244", section_id: 3 },
+
+  { start_date: "2017-06-30 09:20", end_date: "2017-06-30 12:20", text: "Task D-52688", section_id: 4 },
+  { start_date: "2017-06-30 11:40", end_date: "2017-06-30 16:30", text: "Task D-46588", section_id: 4 },
+  { start_date: "2017-06-30 12:00", end_date: "2017-06-30 18:00", text: "Task D-12458", section_id: 4 }
+]);
+function reloadScheduler(schedulerVersion) {
+
+  scheduler.version = schedulerVersion;
+  dhtmlx.message("Current Scheduler version: " + scheduler.version)
+  /*
+  var script = document.createElement("script");
+  script.onload = function(){
+    this.parentNode.removeChild(this);// remove script from dom in order not to clutter it too much
+    scheduler.config.xml_date = "%Y-%m-%d %h:%i";
+
+
+    scheduler.init("scheduler_here",new Date(2009,5,30),"week");
+scheduler.parse(events, "json");
+scheduler.message("Current Scheduler version: " + scheduler.version)
+
+    //export function
+    var script2 = document.createElement("script");
+    script2.src = "../public/scheduler/api.js"
+    document.querySelector("head").appendChild(script2);
+  };
+
+  script.src = "../scheduler/builds/gantt" + schedulerVersion.replace('.','') + "/codebase/dhtmlxgantt.js"
+  document.querySelector("head").appendChild(script);
+*/
+}
+
+</script>
+
+</html>

@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+<head>
+	<title>Export Control Panel</title>
+	<script type="text/javascript" src="//cdn.webix.com/edge/webix.js"></script>
+	<link rel="stylesheet" type="text/css" href="//cdn.webix.com/edge/webix.css">
+</head>
+<body>
+<script type="text/javascript">
+webix.ready(function(){
+	var key = document.location.hash.replace("#","");
+	var grid = {
+		view:"datatable",
+		id:"domains",
+		scheme:{
+			$init:function(obj){
+				if (obj.end)
+					obj.end = new Date(obj.end*1000);
+				else {
+					obj.end = new Date();
+					obj.end.setFullYear(obj.end.getFullYear()+1);
+				}
+			},
+			$serialize:function(obj){
+				var temp = webix.copy(obj);
+				temp.end = temp.end.valueOf()/1000;
+				return temp;
+			}
+		},
+		columns:[
+			{ id:"domain", editor:"text", fillspace:true, header:[ "Domain", { content:"textFilter" } ] },
+			{ id:"end", editor:"date", format: webix.i18n.longDateFormatStr, width:150, css:{ "text-align":"right" }, header:[ "End", { content:"dateFilter" } ] },
+			{ id:"watermark", editor:"inline-checkbox", template:"{common.checkbox()}" },
+			{ id:"store", editor:"inline-checkbox", template:"{common.checkbox()}" },
+			{ id:"name", editor:"text", fillspace:true, header:[ "Name", { content:"textFilter" } ]},
+			{ id:"email", editor:"text", fillspace:true, header:[ "Email", { content:"textFilter" } ]},
+			{ id:"license", editor:"text", fillspace:true, header:[ "License", { content:"textFilter" } ]},
+			{ id:"comments", editor:"text", fillspace:true, header:[ "Comments", { content:"textFilter" } ]}
+		],
+		editable:true
+	};
+
+	var toolbar = {
+		view:"toolbar", elements:[
+			{},
+			{ view:"button", value:"Add", width:150, click:function(){
+				var id = $$("domains").add({
+					id:webix.uid(),
+					domain:"test.com",
+					watermark:1,
+					store:1,
+					name:""
+				});
+				$$("domains").editCell(id, "domain");
+			}},
+			{ view:"button", value:"Save", width:150, click:function(){
+				var data = JSON.stringify( $$("domains").serialize() );
+				webix.ajax().post(document.location.href, { call:"save_licenses", data:data }, function(text, data){
+					webix.message("Saved !");
+				});
+			}}
+		]
+	};
+
+	var ui = {
+		rows:[ toolbar, grid ]
+	};
+
+	webix.ui(ui);
+
+	webix.ajax().post(document.location.href, { call:"get_licenses" }, function(text, data){
+		$$("domains").parse(text, "json");
+	});
+});
+</script>
+</body>
+</html>

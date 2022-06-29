@@ -1,0 +1,101 @@
+<html>
+<body>
+<style>
+body {
+  /*transform: scale(1.0);*/
+  /* zoom: 71%; */
+}
+
+.chart{
+  height: 90%;
+  overflow: scroll;
+}
+
+.zooming, .start_slice{
+  width: 50px;
+}
+
+span  {  white-space: nowrap !important;  hyphens: none;  }
+
+
+</style>
+
+<h3>Compiled Gantt chart:</h1>
+<div class='main'>
+Pieces: {{pieces}} | Horizontal slices: {{hor_slices}} ||
+Folder: <input value="sliceArchive1591259293090" onchange="folder=this.value">
+Zoom: <input class='zooming' value="10" type=number onwheel="change_zoom(this.value)">
+Start slice:<input class='start_slice' value="0" type=number onchange="start_slice=this.value">
+Borders:<input type=checkbox onchange="border_slices(this.checked)">
+
+
+<input type=button value="Reload screenshots" onclick="reload_screenshots()">
+<!-- <P>sfsdfdsf</P>> -->
+
+</div>
+
+<div class='chart'></div>
+
+
+</body>
+<script>
+var max_pieces = 900;
+var pieces = '{{pieces}}' || 900;
+var hor_slices = '{{hor_slices}}' || 71;
+
+var folder = '{{folder}}' || "sliceArchive1591259293090"
+var start_slice = 0;
+
+
+function reload_screenshots(){
+
+  if (pieces > max_pieces) {
+    console.log("Max number of pieces exceed")
+    pieces = max_pieces;
+  }
+
+  var big_string = [`<span>`];
+
+  var chart_el = document.querySelector(".chart")
+  for (var number = 1; number <= pieces; number++) {
+    var template = `<img src="${folder}/gantt_slice${(+number+ +start_slice)}.png" title="gantt_slice${(+number+ +start_slice)}.png">`
+    // console.log("template",template)
+
+    big_string.push(template);
+    if (number % hor_slices == 0) big_string.push(`<br>`);
+    else big_string.push(`<span>`);
+
+  }
+
+  // console.log('big_string', big_string)
+
+  chart_el.innerHTML = big_string.join('')
+}
+
+
+function change_zoom(value){
+  var images = document.querySelectorAll("img")
+  for (var i = 0; i < images.length; i++) {
+    if (navigator.userAgent.indexOf("Firefox") >= 0){
+      images[i].style.width = value + "%";
+      images[i].style.height = value + "%";
+    }
+    else {
+      images[i].style.zoom = value * 0.01;
+    }
+  }
+}
+function border_slices(value){
+  var images = document.querySelectorAll("img")
+  for (var i = 0; i < images.length; i++) {
+    if (value) images[i].style.border = 'gray dashed 1px';
+    else images[i].style.border = 'gray dashed 0px';
+  }
+}
+
+reload_screenshots();
+
+</script>
+
+
+</html>

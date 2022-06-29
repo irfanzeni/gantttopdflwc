@@ -1,0 +1,37 @@
+{
+  "name": "gantt-pdf",
+  "version": "0.5.8",
+  "description": "DHX export service for Gantt and Scheduler",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test/test.js",
+    "start": "node index.js",
+    "start:docker": "export TMPDIR=/sites/export-service/tempFolder && xvfb-run -s '-screen 0, 1024x1024x24 -noreset' node index.js"
+  },
+  "author": "Maksim Kozhukh",
+  "license": "",
+  "dependencies": {
+    "archiver": "^4.0.1",
+    "bluebird": "^2.2.1",
+    "concat-stream": "^1.4.6",
+    "content-disposition": "^0.5.2",
+    "cors": "^2.8.5",
+    "electron": "6.1",
+    "excel4node": "^1.7.2",
+    "express": "^4.17.1",
+    "express-formidable": "^1.2.0",
+    "formidable": "^1.2.1",
+    "glob": "^7.1.3",
+    "icalevent": "^0.3.2",
+    "jszip": "~2.4.0",
+    "moment": "^2.23.0",
+    "node-xlsx": "^0.4.0",
+    "raven": "^0.10.0",
+    "request": "^2.88.0",
+    "sanitize-filename": "^1.6.1",
+    "sanitize-html": "^1.19.3",
+    "seq-queue": "0.0.5",
+    "uuid": "^8.3.2",
+    "xlsx": "^0.14.0"
+  }
+}

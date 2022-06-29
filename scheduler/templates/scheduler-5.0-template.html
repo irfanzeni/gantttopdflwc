@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+</head>
+    <link rel="stylesheet" href="../../../scheduler/builds/scheduler50/codebase/dhtmlxscheduler{{skin}}.css" type="text/css" title="no title" charset="utf-8" media="all">
+
+    <style type="text/css">
+        html, body{ height:100%; overflow:visible ; padding:0px ; margin:0px ; background: white; font-family: Tahoma; font-size:14px; }
+        .dhx_cal_navline, .dhx_cal_navline div, .dhx_cal_scale_placeholder { display: none; }
+        .dhx_cal_navline .dhx_cal_date { display: block; }
+        .dhx_cal_data { overflow: hidden; }
+        .dhx_scale_holder .dhx_scale_hour {border-bottom: none; box-shadow: 0 -1px #CECECE;}
+    </style>
+<body>
+    <div id='component_container' style='padding: 30px; background: #FFFFFF; zoom: {{zoom}};'>
+        <div id='scheduler_header'>{{header}}</div>
+        <div id='scheduler_here'  class='dhx_cal_container dhx_scheduler_{{mode}}' style='border: 1px solid #CECECE;'>{{html}}</div>
+        <div id='scheduler_footer'>{{footer}}</div>
+        {{watermark}}
+    </div>
+    <script>
+
+    var containerElement = document.getElementById("component_container");
+    var boxElement       = document.getElementById("scheduler_here");
+
+    var innerData     = document.querySelector(".dhx_cal_data");
+    var innerHeader   = document.querySelector(".dhx_cal_header");
+    var innerMultiday = document.querySelector(".dhx_multi_day");
+
+    if (innerData)
+        innerData.style.height = "100%";
+
+    var dataY   = innerData ? innerData.scrollHeight : 0;
+    var headerY = innerHeader ? innerHeader.scrollHeight : 0;
+    var multiY  = innerMultiday ? innerMultiday.scrollHeight : 0;
+
+
+    boxElement.style.height = dataY + headerY + multiY + "px";
+    boxElement.style.width  = innerData.scrollWidth - 2 + "px";
+
+    containerElement.style.width  = innerData.scrollWidth + "px";
+    </script>   
+</body>

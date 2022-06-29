@@ -1,0 +1,29 @@
+kind: pipeline
+name: default
+
+steps:
+
+- name: docker
+  image: plugins/docker
+  settings:
+    username: drone
+    password:
+      from_secret: docker_password
+    repo: registry.webix.io/gantt-export
+    tags: "${DRONE_BRANCH}"
+    registry: registry.webix.io
+    cache_from: 
+      - "registry.webix.io/gantt-export:master"
+
+- name: deploy
+  image: registry.webix.io/js-build-env
+  environment:
+    RESTART_HOOK_TOKEN:
+      from_secret: restart_hook_token
+  commands:
+    - curl -s "http://138.68.20.190:2280/h00ks/restart-docker?token=$${RESTART_HOOK_TOKEN}&project=gantt-export&branch=${DRONE_BRANCH}"
+
+trigger:
+  branch:
+    exclude:
+      - temp/*
